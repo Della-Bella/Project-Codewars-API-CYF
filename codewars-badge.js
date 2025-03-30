@@ -1,12 +1,81 @@
 // This native web component fetches data from the Codewars API and renders it as a badge
 // Here is some information about web component https://developer.mozilla.org/en-US/docs/Web/Web_Components
 // Here is the link to the Codewars API Docs: https://dev.codewars.com/#get-user
+//the first section is for the searchsection implementation
+class CodewarsSearch extends HTMLElement{
+  constructor(){
+    super();
+    this.attachShadow({mode:"open"}); //for isolated styling and structure
+  }
+
+  connectedCallback(){
+    this.render(); //this is the initial render
+  }
+  handlingTheSearch(){
+    const input = this.shadowRoot.querySelector("#usernameInput");
+    const username = input.value.trim(); //input the username and clean it
+    if(!username) return; //this prevents empty input
+    //find the badge and change its username
+    const badge = document.querySelector("codewars-badge");
+    if(badge){
+      badge.userName = username; //updating the username if the badge exists.
+      badge.fetchActivity(); //by using badge fetch.
+    }
+    const challenges = document.querySelector("codewars-recent-challenges");
+    if(challenges){
+      challenges.setAttribute("username", username);
+    }
+
+  }
+  render(){
+    this.shadowRoot.innerHTML = `
+      <style>
+        .search-container {
+          display: flex;
+          margin:30px;
+          max-width:50%;
+          gap: 10px;
+          height:50px;
+        }
+        input {
+          flex: 1;
+          padding: 8px;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+        }
+        button {
+          padding: 8px 12px;
+          width:20%;
+          background: #007acc;
+          color: white;
+          border: none;
+          cursor: pointer;
+          border-radius: 4px;
+        }
+        button:hover {
+          background: #005f99;
+        }
+      </style>
+      <div class="search-container">
+        <input id="usernameInput" type="text" placeholder="Enter Codewars username..." />
+        <button id="searchBtn">Search</button>
+      </div>
+    `;
+    //event listener
+    this.shadowRoot.querySelector("#searchBtn").addEventListener("click", () => this.handlingTheSearch());
+  }
+  }
+//defining the new search component
+customElements.define("codewars-search", CodewarsSearch);
+
+
+//this implementation is for the codewarsbadge
 class CodeWarsBadge extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });// this creates an isolated DOM or shadow Dom for styling
     this.userName = "Mikiyas-STP"; //this holds the codewar username
-    this.userData = []; //this is an array to store the userDatas
+    this.userData = null; //this is set to null to check for empty data
   }
   connectedCallback() {
     this.fetchActivity()
@@ -41,6 +110,9 @@ class CodeWarsBadge extends HTMLElement {
     :host {
       font: 600 1rem system-ui, sans-serif;
           }
+        #main-cont{
+        margin:30px;
+                }
         .badge{
         display: inline-block;
         color: black;
@@ -52,7 +124,7 @@ class CodeWarsBadge extends HTMLElement {
         background: green;
         }
         p{
-        margin: 5px 0;
+        margin: 5px 0px;
         line-height: 1.4;
         }
         .progress-bar{
@@ -69,13 +141,15 @@ class CodeWarsBadge extends HTMLElement {
         transition: width 0.5s ease-in-out;
       }
       </style>
+      <div id="main-cont">
       <div >
         <p><strong>Username:</strong>${this.userData.username}</p>
         <p><strong>Honor Points:</strong>${this.userData.honor}</p>
         <div class="progress-bar">
         <div class="progress"></div>
-        </div>
-        
+      
+      </div>
+      <div>
         <p><strong>Completed Challenges:</strong> ${
           this.userData.codeChallenges.totalCompleted
         }</p>
@@ -83,7 +157,9 @@ class CodeWarsBadge extends HTMLElement {
         <p class="badge"><strong>Rank:</strong>${
           this.userData.ranks.overall.name
         }</p>
-      </div>`;    
+      </div>
+      </div>`
+      ;    
   }
   renderError(){
     this.shadowRoot.innerHTML = `<style>
@@ -98,28 +174,39 @@ class CodeWarsBadge extends HTMLElement {
 customElements.define("codewars-badge", CodeWarsBadge);
 /* New functionality added for the stretch exercise which is displaying the recent challenges. */
 //creating a new class that extend html element to make the class a web component  <i used the same implementation>
-class RecentChallenges extends HTMLElement{
-  constructor(){
+class RecentChallenges extends HTMLElement {
+  constructor() {
     super();
-    this.attachShadow({mode:'open'});
-    this.userName = 'Mikiyas-STP';
-    this.challenges = [];// to store the fetched challenges
+    this.attachShadow({ mode: "open" });
+    this.userName = "Mikiyas-STP";
+    this.challenges = []; // to store the fetched challenges
   }
-  connectedCallback(){
+//this code detects observed attributes of the username 
+  static get observedAttributes() {
+    return ["username"];
+  }
+//for the changed username if oldvalue is different from newvalue replace the username with the new value then fetch the challanges.
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === "username" && oldValue !== newValue) {
+      this.userName = newValue;
+      this.fetchChallenges();
+    }
+  }
+
+  connectedCallback() {
     this.fetchChallenges()
-      .then(()=> this.render())
-      .catch(error => {
+      .then(() => this.render())
+      .catch((error) => {
         console.error("Error fetching recent challenges:", error);
         this.renderError();
       });
   }
-  async fetchChallenges(){
+  async fetchChallenges() {
     try {
       const res = await fetch(
         `https://www.codewars.com/api/v1/users/${this.userName}/code-challenges/completed`
       );
-      if (!res.ok)
-        throw new Error(`HTTP error! Status: ${res.status}`);
+      if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
       const data = await res.json();
       this.challenges = data.data.slice(0, 5); // Get the latest 5 challenges
       this.render();
@@ -137,6 +224,7 @@ class RecentChallenges extends HTMLElement{
       .challenges {
         font-family: Arial, sans-serif;
         padding: 10px;
+        margin-left:10px;
         background: #f8f8f8;
         border-radius: 8px;
       }
@@ -160,11 +248,15 @@ class RecentChallenges extends HTMLElement{
       <h3>Recent Challenges</h3>
       ${this.challenges
         .map(
-          challenge => `
+          (challenge) => `
           <div class="challenge">
             <p><strong>Name:</strong> ${challenge.name}</p>
-            <p><strong>Completed At:</strong> ${new Date(challenge.completedAt).toLocaleDateString()}</p>
-            <p><a href="https://www.codewars.com/kata/${challenge.id}" target="_blank">View Kata</a></p>
+            <p><strong>Completed At:</strong> ${new Date(
+              challenge.completedAt
+            ).toLocaleDateString()}</p>
+            <p><a href="https://www.codewars.com/kata/${
+              challenge.id
+            }" target="_blank">View Kata</a></p>
           </div>`
         )
         .join("")}
