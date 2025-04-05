@@ -9,9 +9,31 @@
       content="Extending HTML to create a new component"
     />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="./style.css">
   </head>
   <body>
-    <codewars-badge></codewars-badge>
+    <template id="card">
+      <section id="my_card">
+        <div id="badge_div"></div>
+        <h3>Full name</h3>
+        <h4>Clan</h4>
+        <h4>Score</h4>
+        <div id="stickers_div"></div>
+      </section>
+    </template>
+
+    <section id="search_bar">
+      <label for="username">
+        Enter Codewars Username:
+        <input type="text" id="username" placeholder="Codewars username..." />
+      </label>
+      <button id="fetchData">Get Card</button>
+    </section>
+
+    <section id="display"></section>
+
     <script async defer type="module" src="./codewars-badge.js"></script>
+    <script async defer type="module" src="./codewars-sticker.js"></script>
+    <script async defer type="module" src="./script.js"></script>
   </body>
 </html>
