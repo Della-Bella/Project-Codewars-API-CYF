@@ -3,7 +3,7 @@ class CodeWarsBadge extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
-    this.userName = "CodeYourFuture";
+    this.userName = "Della%20Bella%20";
     this.userData = {};
   }
 
@@ -28,15 +28,41 @@ class CodeWarsBadge extends HTMLElement {
     this.shadowRoot.innerHTML = `
       <style>
         :host {
-          --rank: ${this.userData.ranks.overall.color};
-          font: 600 100%/1 system-ui, sans-serif;
+          display: block; /* Already block, which is needed */
+          padding: 1.5em;
+          font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+          background-color: #ffffff;
+          color: #333;
+          border: 1px solid #e0e0e0;
+          border-radius: 8px;
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+          box-sizing: border-box;
+
+          /* --- Centering Styles --- */
+          max-width: 600px;  /* Or choose a width like 'width: 80%;' or 'width: 500px;' */
+          margin-left: auto;
+          margin-right: auto;
+          /* --- End Centering Styles --- */
+
+          margin-bottom: 1em; /* Keep the space below */
         }
-        data { 
-          color: var(--rank);
-          border: 3px solid; 
-          padding: .25em .5em;
-        }      
+
+        /* Add other styles for elements inside your component */
+        h2 {
+          margin-top: 0;
+          color: #111;
+        }
+
+        p {
+            line-height: 1.5;
+        }
+
+        p > br {
+            display: none;
+        }
+
       </style>
+      <h1> Codewars Component CYF </h1>
       <data value="${this.userData.ranks.overall.score}">
         ${this.userData.ranks.overall.name}
       </data>
@@ -53,7 +79,7 @@ class CodeWarsName extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
-    this.userName = "CodeYourFuture"; // Set default username
+    this.userName = "Della%20Bella%20"; // Set default username
     this.userData = {};
   }
 
@@ -81,7 +107,7 @@ class CodeWarsName extends HTMLElement {
           font: 600 100%/1 system-ui, sans-serif;
         }
         span {
-          color: #333;
+          color: #black;
         }
       </style>
       <span>${this.userData.username}</span>`;
